@@ -80,7 +80,7 @@ const predefinedItems: MenuItem[] = [
       "Grilled calamari with lemon and cilantro",
     category: "Starter",
     price: 55,
-    intensity: "",
+    intensity: "Mild",
     image:
       "https://www.thetastychilli.com/wp-content/uploads/2022/01/grilled-calamari-rings-lemon.jpg",
     ingredients: ["Raw calamari rings", "Lemon juice", "Olive oil", "Dried oregano", "Garlic", "Red pepper flakes", "Cilantro", "Black pepper", "Seasalt flakes"],
@@ -92,7 +92,7 @@ const predefinedItems: MenuItem[] = [
       "Soy glazed crispy chicken wings, topped with sesame seeds & coriander",
     category: "Starter",
     price: 70,
-    intensity: "",
+    intensity: "Medium",
     image:
       "https://www.allrecipes.com/thmb/3sjLmvPzxHf3ID4-XqjsHeXcxrg=/0x512/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/AR-230873-amazing-and-easy-chicken-wings-ddmfs-4x3-8612d3a676444dc8b5e7933cf53be575.jpg",
     ingredients: ["Chicken wings", "Soy sauce", "Sugar", "Sesame seeds", "Cilantro"],
@@ -104,7 +104,7 @@ const predefinedItems: MenuItem[] = [
       "Seared & steamed. Served with kimchi & Indonesian soya dipping sauce",
     category: "Starter",
     price: 85,
-    intensity: "",
+    intensity: "Medium",
     image:
       "https://tarasmulticulturaltable.com/wp-content/uploads/2019/02/Wagyu-Beef-Dumplings-10-of-10.jpg",
     ingredients: ["Wagyu beef", "Soy sauce", "Black pepper", "Gyoza wrappers", "Rosemary"],
@@ -116,7 +116,7 @@ const predefinedItems: MenuItem[] = [
       "Fresh tagliatelle, with whole fried prawns, Parmesan, parsley, chilli & garlic butter",
     category: "Main",
     price: 175,
-    intensity: "",
+    intensity: "Medium",
     image:
       "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/prawn-harissa-spaghetti-d29786f.jpg?quality=90&webp=true&resize=440,400",
     ingredients: ["Tagliatelle","Prawns", "Parmesan Cheese","Parsley","Chilli Pepper","Garlic butter"],
@@ -128,7 +128,7 @@ const predefinedItems: MenuItem[] = [
       "Grilled beef rib eye steak & prawns with lemon & herb butter, served with your choice of side",
     category: "Main",
     price: 195,
-    intensity: "",
+    intensity: "Mild",
     image:
       "https://cookingwithcurls.com/wp-content/uploads/2013/05/Grilled-Steak-and-Shrimp.-cookingwithcurls.com_.jpg",
     ingredients: ["Beef Rib Eye Steak", "Prawns", "Butter", "Lemon", "Herbs"],
@@ -140,7 +140,7 @@ const predefinedItems: MenuItem[] = [
       "Toasted artisan brioche bun, crunchy chicken breast, butter lettuce, avo, tomato, burger sauce, served with your choice of side",
     category: "Main",
     price: 167,
-    intensity: "",
+    intensity: "Mild",
     image:
       "https://i.pinimg.com/736x/4e/82/e1/4e82e1301bb30942fa4e7c78754aa45f.jpg",
     ingredients:["Brioche Bun", "Chicken Breast", "Butter Lettuce", "Avocado", "Tomato", "Burger Sauce"],
@@ -152,7 +152,6 @@ const predefinedItems: MenuItem[] = [
       "Vanilla bean ice cream served on chocolate ganache with a double shot of espresso & hazelnut praline",
     category: "Dessert",
     price: 50,
-    intensity: "",
     image:
       "https://i.pinimg.com/736x/4e/82/e1/4e82e1301bb30942fa4e7c78754aa45f.jpg",
     ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
@@ -164,7 +163,6 @@ const predefinedItems: MenuItem[] = [
       "Dark chocolate brownie with caramel honeycomb crunch & Jack Daniels butterscotch sauce, served with vanilla bean ice cream",
     category: "Dessert",
     price: 70,
-    intensity: "",
     image:
       "https://mymorningmocha.com/wp-content/uploads/2022/07/Honeycomb-brownie-recipe.jpg",
     ingredients:["Dark Chocolate Brownie", "Caramel Honeycomb Crunch", "Jack Daniels Butterscotch Sauce", "Vanilla Bean Ice Cream"],
@@ -176,7 +174,6 @@ const predefinedItems: MenuItem[] = [
       "A creamy salted miso caramel cheesecake with a hint of orange on ginger biscuit crust",
     category: "Dessert",
     price: 105,
-    intensity: "",
     image:
       "https://www.marionskitchen.com/wp-content/uploads/2021/08/MIso-Caramel-Cheesecake1957.jpeg",
     ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
@@ -188,7 +185,6 @@ const predefinedItems: MenuItem[] = [
       "A creamy salted miso caramel cheesecake with a hint of orange on ginger biscuit crust",
     category: "Dessert",
     price: 105,
-    intensity: "",
     image:
       "https://www.marionskitchen.com/wp-content/uploads/2021/08/MIso-Caramel-Cheesecake1957.jpeg",
     ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
@@ -200,7 +196,6 @@ const predefinedItems: MenuItem[] = [
       "Dusted in sugar, cinnamon served with a dark chocolate ganache dip",
     category: "Dessert",
     price: 70,
-    intensity: "",
     image:
       "https://stellanspice.com/wp-content/uploads/2021/12/IMG_0808-1-1154x1536.jpg",
     ingredients:["Sugar", "Cinnamon", "Dark Chocolate Ganache"],
@@ -212,7 +207,7 @@ const predefinedItems: MenuItem[] = [
       "Creamy potato mash infused with roasted garlic",
     category: "Sides",
     price: 45,
-    intensity: "",
+    intensity: "Mild",
     image:
       "https://www.allrecipes.com/thmb/QH_JKQhpxGnX247VU58OVkOW0g8=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/18290-garlic-mashed-potatoes-ddmfs-beauty2-4x3-0327-2-47384a10cded40ae90e574bc7fdb9433.jpg",
     ingredients:["Potatoes", "Garlic", "Cream", "Butter"],
@@ -224,7 +219,7 @@ const predefinedItems: MenuItem[] = [
       "Classic Mac & cheese with a twist of kimchi & a crunchy gratin topping",
     category: "Sides",
     price: 65,
-    intensity: "",
+    intensity: "Hot",
     image:
       "https://takestwoeggs.com/wp-content/uploads/2021/11/Kimchi-Mac-and-Cheese-Takestwoeggs-FINAL-sq.jpg",
     ingredients:["Potatoes", "Garlic", "Cream", "Butter"],
@@ -236,7 +231,7 @@ const predefinedItems: MenuItem[] = [
       "Crushed cucumber soaked in spicy Korean dressing with toasted sesame seeds",
     category: "Sides",
     price: 50,
-    intensity: "",
+    intensity: "Medium",
     image:
       "https://healthynibblesandbits.com/wp-content/uploads/2021/07/Smashed-Cucumber-Salad-6.jpg",
     ingredients:["Cucumber", "Korean Chili Flakes (Gochugaru)", "Soy Sauce", "Vinegar", "Sesame Seeds", "Garlic", "Sugar", "Sesame Oil"],
@@ -248,7 +243,7 @@ const predefinedItems: MenuItem[] = [
       "Spiced potatoes with aioli & bravas sauce",
     category: "Sides",
     price: 70,
-    intensity: "",
+    intensity: "Medium",
     image:
       "https://img-cdn.oliveoiltimes.com/cb:2sys.247e0/w:1620/h:1080/q:67/ig:avif/id:203914907dbe14c81bbba48b29665010/https://www.oliveoiltimes.com/brava.jpg",
     ingredients:["Potatoes", "Paprika", "Garlic", "Olive Oil", "Mayonnaise", "Tomato", "Chili"],
