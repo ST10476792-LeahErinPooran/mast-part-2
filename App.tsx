@@ -75,16 +75,29 @@ export type RootStackParamList = {
 // Predefined sample items shown when the app starts
 const predefinedItems: MenuItem[] = [
   {
-    itemName: "Hot Chocolate",
+    itemName: "Grilled Calamari",
     description:
-      "A rich and creamy blend of premium cocoa and steamed milk, topped with whipped cream and chocolate flakes.",
-    category: "Beverage",
+      "Grilled calamari with lemon and cilantro",
+    category: "Starter",
     price: 55,
-    intensity: "Smooth & Comforting",
+    intensity: "",
     image:
-      "https://images.pexels.com/photos/34286081/pexels-photo-34286081.jpeg",
-    ingredients: ["Cocoa powder", "Steamed milk", "Whipped cream", "Sugar"],
+      "https://www.thetastychilli.com/wp-content/uploads/2022/01/grilled-calamari-rings-lemon.jpg",
+    ingredients: ["Raw calamari rings", "Lemon juice", "Olive oil", "Dried oregano", "Garlic", "Red pepper flakes", "Cilantro", "Black pepper", "Seasalt flakes"],
   },
+
+   {
+    itemName: "Chicken wings",
+    description:
+      "Soy glazed crispy chicken wings, topped with sesame seeds & coriander",
+    category: "Starter",
+    price: 50,
+    intensity: "",
+    image:
+      "https://www.allrecipes.com/thmb/3sjLmvPzxHf3ID4-XqjsHeXcxrg=/0x512/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/AR-230873-amazing-and-easy-chicken-wings-ddmfs-4x3-8612d3a676444dc8b5e7933cf53be575.jpg",
+    ingredients: ["Chicken wings", "Soy sauce", "Sugar", "Sesame seeds", "Cilantro"],
+  },
+
   {
     itemName: "Decadent White Chocolate Ganache Cake",
     description:
@@ -419,11 +432,11 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
                 style={styles.pickerStyle}
                 itemStyle={{ height: 50 }}
               >
-                <Picker.Item label="Beverage" value="Beverage" />
                 <Picker.Item label="Starter" value="Starter" />
                 <Picker.Item label="Main" value="Main" />
                 <Picker.Item label="Dessert" value="Dessert" />
                 <Picker.Item label="Side" value="Side" />
+                <Picker.Item label="Beverage" value="Beverage" />
               </Picker>
             </View>
           </View>
