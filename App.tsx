@@ -16,16 +16,21 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+
+// ✅ React Navigation imports (for screen navigation)
 import { NavigationContainer } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
+
+// ✅ Dropdown selector for category choices
 import { Picker } from "@react-native-picker/picker";
 
 
-// ------------------ Types ------------------
-export type CafeItem = {
+// ------------------ 📘 Type Definitions ------------------
+// Define the structure of a single menu item object
+export type MenuItem = {
   itemName: string;
   description: string;
   category: string;
@@ -35,38 +40,40 @@ export type CafeItem = {
   ingredients?: string[];
 };
 
+// Define all navigation routes (and what parameters each route accepts)
 export type RootStackParamList = {
   WelcomeScreen: undefined;
   HomeScreen:
   | {
-    items: CafeItem[];
-    setItems: React.Dispatch<React.SetStateAction<CafeItem[]>>;
+    items: MenuItem[];
+    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
   }
   | undefined;
   CourseSelectionScreen:
   | {
-    items: CafeItem[];
-    setItems: React.Dispatch<React.SetStateAction<CafeItem[]>>;
+    items: MenuItem[];
+    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
   }
   | undefined;
-  DishDetailsScreen: { item: CafeItem } | undefined;
+  DishDetailsScreen: { item: MenuItem } | undefined;
   FilteredResultsScreen:
   | {
-    items: CafeItem[];
+    items: MenuItem[];
     filterCourse?: string;
     maxPrice?: number;
   }
   | undefined;
   ManageScreen:
   | {
-    items: CafeItem[];
-    setItems: React.Dispatch<React.SetStateAction<CafeItem[]>>;
+    items: MenuItem[];
+    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
   }
   | undefined;
 };
 
-// ------------------ Seed data ------------------
-const predefinedItems: CafeItem[] = [
+// ------------------ ☕ Seed (Initial) Data ------------------
+// Predefined sample items shown when the app starts
+const predefinedItems: MenuItem[] = [
   {
     itemName: "Hot Chocolate",
     description:
@@ -112,21 +119,27 @@ const predefinedItems: CafeItem[] = [
   },
 ];
 
-// ------------------ Screens ------------------
+
+// ------------------ 🏠 Screens ------------------
+
+// 🖼️ Welcome screen (first screen user sees)
 function WelcomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView style={styles.welcomeContainer}>
+      {/* Background image */}
       <Image
         source={{
           uri: "https://i.pinimg.com/1200x/33/94/01/339401958ca2f8ecb0ffe136afb70dd8.jpg",
         }}
         style={styles.heroImage}
       />
+      {/* Overlay with text and button */}
       <View style={styles.overlay}>
         <Text style={styles.welcomeTitle}>Welcome to Bari</Text>
         <Text style={styles.welcomeText}>
           Your cozy café experience — right on your screen.
         </Text>
+        {/* Button navigates to the HomeScreen */}
         <TouchableOpacity
           style={styles.startButton}
           onPress={() => navigation.navigate("HomeScreen")}
@@ -138,19 +151,21 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
   );
 }
 
+// 🏡 Main Home Screen — shows menu list
 function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "HomeScreen">) {
-  // Accept items from route params if provided, otherwise use local copy
+  // If items were passed from navigation, use them; otherwise use predefined
   const passedItems = route.params?.items;
   const passedSetItems = route.params?.setItems;
 
-  const [items, setItems] = useState<CafeItem[]>(passedItems ?? predefinedItems);
+  const [items, setItems] = useState<MenuItem[]>(passedItems ?? predefinedItems);
 
-  // If a parent setItems was provided (App-level), keep them in sync when changed
-  const updateItems = (next: CafeItem[]) => {
+  // Sync changes back to parent state if available
+  const updateItems = (next: MenuItem[]) => {
     setItems(next);
     if (passedSetItems) passedSetItems(next);
   };
 
+  // Remove an item with confirmation alert
   const removeItem = (index: number) => {
     Alert.alert("Remove Item", "Are you sure you want to remove this item?", [
       { text: "Cancel", style: "cancel" },
@@ -163,6 +178,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
       <Text style={styles.mainTitle}>Barista Bliss</Text>
       <Text style={styles.subtitle}>Warm Coffee · Cozy Pastries · Sweet moments</Text>
 
+      {/* List of menu items */}
       <FlatList
         data={items}
         keyExtractor={(_, i) => i.toString()}
@@ -176,6 +192,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
                 {item.category} · R{item.price} · {item.intensity}
               </Text>
 
+              {/* Action buttons for each menu item */}
               <View style={{ flexDirection: "row", marginTop: 10 }}>
                 <TouchableOpacity
                   style={[styles.smallButton]}
@@ -196,6 +213,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
         )}
       />
 
+      {/* Navigation buttons to other screens */}
       <View style={{ marginTop: 10 }}>
         <TouchableOpacity
           style={styles.rowButton}
@@ -219,9 +237,12 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
   );
 }
 
+
+// 🍽️ Course Selection Screen — filters menu by course type
 function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "CourseSelectionScreen">) {
   const items = route.params?.items ?? predefinedItems;
 
+  // Collect unique category names (Starter, Main, etc.)
   const categories = Array.from(new Set(items.map((i) => i.category)));
 
   return (
@@ -229,6 +250,7 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
       <Text style={styles.mainTitle}>Course Selection</Text>
       <Text style={styles.subtitle}>Browse by course</Text>
 
+      {/* Show one button per category */}
       {categories.map((cat) => (
         <TouchableOpacity
           key={cat}
@@ -239,6 +261,7 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
         </TouchableOpacity>
       ))}
 
+      {/* Back button */}
       <TouchableOpacity
         style={[styles.rowButton, { marginTop: 20 }]}
         onPress={() => navigation.goBack()}
@@ -249,6 +272,8 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
   );
 }
 
+
+// 🍰 Dish Details Screen — shows full info about one item
 function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "DishDetailsScreen">) {
   const item = route.params?.item;
   if (!item) return null;
@@ -270,11 +295,14 @@ function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootSta
   );
 }
 
+
+// 🧾 Filtered Results Screen — shows only menu items that match filters
 function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "FilteredResultsScreen">) {
   const items = route.params?.items ?? predefinedItems;
   const filterCourse = route.params?.filterCourse;
   const maxPrice = route.params?.maxPrice;
 
+  // Apply filtering logic based on category and/or price
   const filtered = items.filter((i) => {
     if (filterCourse && i.category !== filterCourse) return false;
     if (typeof maxPrice === "number" && i.price > maxPrice) return false;
@@ -288,6 +316,7 @@ function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<Roo
         {filterCourse ? `Course: ${filterCourse}` : "All courses"} {maxPrice ? `· Max R${maxPrice}` : ""}
       </Text>
 
+      {/* Show filtered menu items */}
       <FlatList
         data={filtered}
         keyExtractor={(_, i) => i.toString()}
@@ -312,10 +341,13 @@ function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<Roo
   );
 }
 
+
+// 👩‍🍳 Manage Menu Screen — allows chef to add a new menu item
 function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "ManageScreen">) {
   const parentItems = route.params?.items ?? predefinedItems;
   const parentSetItems = route.params?.setItems;
 
+  // Local state for the form fields
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<string>("Beverage");
@@ -323,13 +355,16 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
   const [image, setImage] = useState("");
   const [ingredients, setIngredients] = useState("");
 
+  // Save button handler
   const handleSubmit = () => {
     if (itemName && description && category && price) {
       const priceValue = parseFloat(price);
       if (priceValue > 0) {
+        // Assign an "intensity" label based on price range
         const intensity = priceValue < 45 ? "Mild" : priceValue < 65 ? "Balanced" : "Strong";
 
-        const newItem: CafeItem = {
+        // Create new menu item object
+        const newItem: MenuItem = {
           itemName,
           description,
           category,
@@ -339,10 +374,12 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
           ingredients: ingredients.split(",").map((i) => i.trim()),
         };
 
+        // Update parent list with new item
         const next = [...parentItems, newItem];
         if (parentSetItems) parentSetItems(next);
         Alert.alert("Saved", "Menu item added.");
-        // reset
+
+        // Reset form fields
         setItemName("");
         setDescription("");
         setPrice("");
@@ -356,6 +393,7 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
     }
   };
 
+  // Form UI layout
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -365,9 +403,11 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
         <ScrollView contentContainerStyle={styles.formContainer}>
           <Text style={styles.formHeader}>Chef — Edit Menu</Text>
 
+          {/* Input fields for item details */}
           <TextInput style={styles.input} placeholder="Item Name" value={itemName} onChangeText={setItemName} />
           <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} />
 
+          {/* Category dropdown */}
           <View style={styles.pickerWrapper}>
             <Text style={styles.label}>Category</Text>
             <View style={styles.pickerContainer}>
@@ -388,15 +428,15 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
             </View>
           </View>
 
-
-
-
+          {/* Other input fields */}
           <TextInput style={styles.input} placeholder="Price (e.g. 50)" keyboardType="numeric" value={price} onChangeText={setPrice} />
           <TextInput style={styles.input} placeholder="Ingredients (comma separated)" value={ingredients} onChangeText={setIngredients} />
           <TextInput style={styles.input} placeholder="Image URL" value={image} onChangeText={setImage} />
 
+          {/* Image preview */}
           {image ? <Image source={{ uri: image }} style={styles.imagePreview} /> : null}
 
+          {/* Action buttons */}
           <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
             <Text style={styles.saveButtonText}>Save Item</Text>
           </TouchableOpacity>
@@ -410,14 +450,16 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
   );
 }
 
-// ------------------ App (navigator) ------------------
+
+// ------------------ 🌍 App Entry & Navigation Setup ------------------
 export default function App() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
-  const [items, setItems] = useState<CafeItem[]>(predefinedItems);
+  const [items, setItems] = useState<MenuItem[]>(predefinedItems);
 
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="WelcomeScreen">
+        {/* Screen registrations with options */}
         <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
         <Stack.Screen
           name="HomeScreen"
@@ -441,6 +483,7 @@ export default function App() {
 
 // ------------------ Styles ------------------
 const styles = StyleSheet.create({
+  // Welcome screen styles
   welcomeContainer: { flex: 1, backgroundColor: "#3e2723" },
   heroImage: { width: "100%", height: "100%", position: "absolute" },
   overlay: {
