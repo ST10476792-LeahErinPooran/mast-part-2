@@ -153,7 +153,7 @@ const predefinedItems: MenuItem[] = [
     category: "Dessert",
     price: 50,
     image:
-      "https://i.pinimg.com/736x/4e/82/e1/4e82e1301bb30942fa4e7c78754aa45f.jpg",
+      "https://foodandtravel.com/assets/img/content/recipes/Mocha-affogato.jpg",
     ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
   },
 
@@ -166,17 +166,6 @@ const predefinedItems: MenuItem[] = [
     image:
       "https://mymorningmocha.com/wp-content/uploads/2022/07/Honeycomb-brownie-recipe.jpg",
     ingredients:["Dark Chocolate Brownie", "Caramel Honeycomb Crunch", "Jack Daniels Butterscotch Sauce", "Vanilla Bean Ice Cream"],
-  },
-
-  {
-    itemName: "Ginger & Miso Caramel Cheesecake",
-    description:
-      "A creamy salted miso caramel cheesecake with a hint of orange on ginger biscuit crust",
-    category: "Dessert",
-    price: 105,
-    image:
-      "https://www.marionskitchen.com/wp-content/uploads/2021/08/MIso-Caramel-Cheesecake1957.jpeg",
-    ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
   },
 
   {
