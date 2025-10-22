@@ -258,7 +258,7 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
       <View style={styles.overlay}>
         <Text style={styles.welcomeTitle}>Welcome 
 to 
- Christoffel’s 
+ Christoffel's 
 Culinary
  Experience</Text>
 
@@ -339,13 +339,21 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
       <Text style={styles.mainTitle}></Text>
       <Text style={styles.subtitle}> ❈ Hearty Meals   ❈ Warm Atmosphere                  ❈ Cherished Moments</Text>
 
-      {/* Filter Button */}
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => setFilterModalVisible(true)}
-      >
-        <Text style={styles.filterButtonText}>Filter Menu</Text>
-      </TouchableOpacity>
+      {/* Item Counter and Filter Button Row */}
+      <View style={styles.headerRow}>
+        <View style={styles.counterContainer}>
+          <Text style={styles.counterText}>
+            Total Items: {items.length} | Showing: {filteredItems.length}
+          </Text>
+        </View>
+        
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setFilterModalVisible(true)}
+        >
+          <Text style={styles.filterButtonText}>Filter Menu</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Filter Modal */}
       <Modal
@@ -726,13 +734,34 @@ const styles = StyleSheet.create({
   mainTitle: { fontSize: 28, fontWeight: "800", color: "#312424ed", textAlign: "center" },
   subtitle: { textAlign: "center", color: "#140a0aed", marginBottom: 15, fontSize: 15 },
 
+  // New styles for the counter and header row
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  counterContainer: {
+    backgroundColor: "#f0e6e6",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d7ccc8",
+  },
+  counterText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#4b2e2b",
+  },
+
   // Filter Styles
   filterButton: {
     backgroundColor: "#9c5353ed",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 10,
+    minWidth: 120,
   },
   filterButtonText: {
     color: "#fff",
@@ -762,7 +791,7 @@ const styles = StyleSheet.create({
   filterLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#4b2e2b",
+    color: "#b96f65ff",
     marginBottom: 8,
     marginTop: 10,
   },
