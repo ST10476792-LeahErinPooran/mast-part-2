@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 
 // ✅ React Navigation imports (for screen navigation)
@@ -227,7 +228,7 @@ const predefinedItems: MenuItem[] = [
   },
 
   {
-    itemName: "Crispy Patatas Bravas:",
+    itemName: "Crispy Patatas Bravas",
     description:
       "Spiced potatoes with aioli & bravas sauce",
     category: "Sides",
@@ -255,9 +256,14 @@ function WelcomeScreen({ navigation }: { navigation: any }) {
       />
       {/* Overlay with text and button */}
       <View style={styles.overlay}>
-        <Text style={styles.welcomeTitle}>Welcome to Bari</Text>
+        <Text style={styles.welcomeTitle}>Welcome 
+to 
+ Christoffel’s 
+Culinary
+ Experience</Text>
+
         <Text style={styles.welcomeText}>
-          Your cozy café experience — right on your screen.
+          Where every flavor tells a story
         </Text>
         {/* Button navigates to the HomeScreen */}
         <TouchableOpacity
@@ -278,10 +284,15 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
   const passedSetItems = route.params?.setItems;
 
   const [items, setItems] = useState<MenuItem[]>(passedItems ?? predefinedItems);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>(passedItems ?? predefinedItems);
 
   // Sync changes back to parent state if available
   const updateItems = (next: MenuItem[]) => {
     setItems(next);
+    setFilteredItems(next);
     if (passedSetItems) passedSetItems(next);
   };
 
@@ -293,14 +304,105 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
     ]);
   };
 
+  // Apply filters
+  const applyFilters = () => {
+    let filtered = [...items];
+    
+    // Filter by category
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(item => item.category === selectedCategory);
+    }
+    
+    // Filter by price
+    if (maxPrice) {
+      const maxPriceValue = parseFloat(maxPrice);
+      filtered = filtered.filter(item => item.price <= maxPriceValue);
+    }
+    
+    setFilteredItems(filtered);
+    setFilterModalVisible(false);
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setSelectedCategory("All");
+    setMaxPrice("");
+    setFilteredItems(items);
+    setFilterModalVisible(false);
+  };
+
+  // Get unique categories for filter
+  const categories = ["All", ...Array.from(new Set(items.map(item => item.category)))];
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.mainTitle}>Barista Bliss</Text>
-      <Text style={styles.subtitle}>Warm Coffee · Cozy Pastries · Sweet moments</Text>
+      <Text style={styles.mainTitle}></Text>
+      <Text style={styles.subtitle}> ❈ Hearty Meals   ❈ Warm Atmosphere                  ❈ Cherished Moments</Text>
+
+      {/* Filter Button */}
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setFilterModalVisible(true)}
+      >
+        <Text style={styles.filterButtonText}>Filter Menu</Text>
+      </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={filterModalVisible}
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Filter Menu</Text>
+            
+            {/* Category Filter */}
+            <Text style={styles.filterLabel}>Category</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedCategory}
+                onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+                style={styles.pickerStyle}
+              >
+                {categories.map((category) => (
+                  <Picker.Item key={category} label={category} value={category} />
+                ))}
+              </Picker>
+            </View>
+
+            {/* Price Filter */}
+            <Text style={styles.filterLabel}>Max Price</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter max price (e.g., 100)"
+              keyboardType="numeric"
+              value={maxPrice}
+              onChangeText={setMaxPrice}
+            />
+
+            {/* Filter Buttons */}
+            <View style={styles.filterButtonsContainer}>
+              <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                <Text style={styles.applyButtonText}>Apply Filters</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.resetButton} onPress={resetFilters}>
+                <Text style={styles.resetButtonText}>Reset</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalCancelButton} onPress={() => setFilterModalVisible(false)}>
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* List of menu items */}
       <FlatList
-        data={items}
+        data={filteredItems}
         keyExtractor={(_, i) => i.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.card}>
@@ -343,15 +445,6 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
         >
           <Text style={styles.rowButtonText}>Next → Courses</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.rowButton, { marginTop: 8 }]}
-          onPress={() =>
-            navigation.navigate("ManageScreen", { items, setItems })
-          }
-        >
-          <Text style={styles.rowButtonText}>Edit Menu (Chef)</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -361,6 +454,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
 // 🍽️ Course Selection Screen — filters menu by course type
 function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "CourseSelectionScreen">) {
   const items = route.params?.items ?? predefinedItems;
+  const passedSetItems = route.params?.setItems;
 
   // Collect unique category names (Starter, Main, etc.)
   const categories = Array.from(new Set(items.map((i) => i.category)));
@@ -381,12 +475,22 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
         </TouchableOpacity>
       ))}
 
-      {/* Back button */}
+      {/* Edit Menu Button */}
       <TouchableOpacity
         style={[styles.rowButton, { marginTop: 20 }]}
+        onPress={() =>
+          navigation.navigate("ManageScreen", { items, setItems: passedSetItems })
+        }
+      >
+        <Text style={styles.rowButtonText}>Edit Menu (Chef)</Text>
+      </TouchableOpacity>
+
+      {/* Back button */}
+      <TouchableOpacity
+        style={[styles.backButton, { marginTop: 8 }]}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.rowButtonText}>Back</Text>
+        <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -604,7 +708,7 @@ export default function App() {
 // ------------------ Styles ------------------
 const styles = StyleSheet.create({
   // Welcome screen styles
-  welcomeContainer: { flex: 1, backgroundColor: "#3e2723" },
+  welcomeContainer: { flex: 1, backgroundColor: "#985447ff" },
   heroImage: { width: "100%", height: "100%", position: "absolute" },
   overlay: {
     flex: 1,
@@ -613,14 +717,93 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 30,
   },
-  welcomeTitle: { color: "#fff", fontSize: 34, fontWeight: "700", textAlign: "center", marginBottom: 10 },
-  welcomeText: { color: "#fbe9e7", fontSize: 16, textAlign: "center", marginBottom: 30 },
-  startButton: { backgroundColor: "#d7ccc8", paddingVertical: 14, paddingHorizontal: 40, borderRadius: 30 },
-  startText: { color: "#3e2723", fontWeight: "bold", fontSize: 18 },
+  welcomeTitle: { color: "#ffffffff", fontSize: 34, fontWeight: "700", textAlign: "center", marginBottom: 10 },
+  welcomeText: { color: "#ffffffff", fontSize: 16, textAlign: "center", marginBottom: 30 },
+  startButton: { backgroundColor: "#4d4132ff", paddingVertical: 14, paddingHorizontal: 40, borderRadius: 30 },
+  startText: { color: "#fffefdff", fontWeight: "bold", fontSize: 18 },
 
-  container: { flex: 1, backgroundColor: "#efebe9", padding: 15 },
-  mainTitle: { fontSize: 28, fontWeight: "800", color: "#4b2e2b", textAlign: "center" },
-  subtitle: { textAlign: "center", color: "#795548", marginBottom: 15, fontSize: 15 },
+  container: { flex: 1, backgroundColor: "#f6ddddff", padding: 15 },
+  mainTitle: { fontSize: 28, fontWeight: "800", color: "#312424ed", textAlign: "center" },
+  subtitle: { textAlign: "center", color: "#140a0aed", marginBottom: 15, fontSize: 15 },
+
+  // Filter Styles
+  filterButton: {
+    backgroundColor: "#9c5353ed",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  filterButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    width: "85%",
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#4b2e2b",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4b2e2b",
+    marginBottom: 8,
+    marginTop: 10,
+  },
+  filterButtonsContainer: {
+    marginTop: 20,
+  },
+  applyButton: {
+    backgroundColor: "#832e2eed",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  applyButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  resetButton: {
+    backgroundColor: "#b15b5bff",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  resetButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  modalCancelButton: {
+    backgroundColor: "#b98282ff",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalCancelButtonText: {
+    color: "#ffffffff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 
   card: {
     backgroundColor: "#fff",
@@ -635,7 +818,7 @@ const styles = StyleSheet.create({
   cardImage: { width: "100%", height: 220 },
   cardContent: { padding: 15 },
   cardTitle: { fontSize: 20, fontWeight: "700", color: "#4b2e2b" },
-  cardDesc: { color: "#5d4037", fontSize: 14, marginVertical: 5 },
+  cardDesc: { color: "#826056ff", fontSize: 14, marginVertical: 5 },
   cardMeta: { color: "#8d6e63", fontSize: 13 },
   removeButton: {
     backgroundColor: "#562f0357",
@@ -676,7 +859,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#8d6e63",
     borderRadius: 10,
-    backgroundColor: "#fff",
+    backgroundColor: "#f4eeeeff",
     height: 50,
     justifyContent: "center",
     overflow: "hidden",
@@ -705,7 +888,7 @@ const styles = StyleSheet.create({
   cancelButtonText: { color: "#5d4037", fontWeight: "bold" },
 
   courseButton: {
-    backgroundColor: "#fff",
+    backgroundColor: "#e0c2b7ff",
     padding: 18,
     borderRadius: 12,
     marginVertical: 8,
@@ -715,7 +898,10 @@ const styles = StyleSheet.create({
   courseButtonText: { fontWeight: "700", fontSize: 16, color: "#4b2e2b" },
 
   rowButton: { backgroundColor: "#4b2e2b", borderRadius: 30, paddingVertical: 14, alignItems: "center", elevation: 3 },
-  rowButtonText: { color: "#fff8e1", fontSize: 16, fontWeight: "700" },
+  rowButtonText: { color: "#e9ddddff", fontSize: 16, fontWeight: "700" },
+
+  backButton: { backgroundColor: "#8d6e63", borderRadius: 30, paddingVertical: 14, alignItems: "center", elevation: 3 },
+  backButtonText: { color: "#fff8e1", fontSize: 16, fontWeight: "700" },
 
   smallButton: { backgroundColor: "#d7ccc8", padding: 8, borderRadius: 8 },
   smallButtonText: { color: "#3e2723", fontWeight: "700" },
