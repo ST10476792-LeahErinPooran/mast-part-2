@@ -1023,3 +1023,41 @@ const styles = StyleSheet.create({
   // Small button text
   smallButtonText: { color: "#ffffffff", fontWeight: "700" },
 });
+
+//CODE ATTRIBUTION//
+
+//Title:TypeScript tutorial in Visual Studio Code//
+//Author:Visual studio code //
+//Date:2025//
+//Version:1//
+//Available:https://code.visualstudio.com/docs/typescript/typescript-tutorial//
+//Date accessed:20/10/2025//
+
+//Title:IIE Module Manual 2025 //
+//Author:The Independant Institute of Education //
+//Date:2025//
+//Version:1//
+//Available:https://advtechonline.sharepoint.com/:w:/r/sites/TertiaryStudents/_layouts/15/Doc.aspx?sourcedoc=%7BC4AAF478-96AC-4469-8005-F7CDC4A15EBB%7D&file=MAST5112MM.docx&action=default&mobileredirect=true//
+//Date accessed:20/10/2025//
+
+//Title:Build a React Native Picker: Tutorial With Examples //
+//Author:Tricentis Waldo //
+//Date:2025//
+//Version://
+//Available:https://www.waldo.com/blog/build-a-react-native-picker-tutorial-with-examples//
+//Date accessed:22/10/2025//
+
+//Title:Navigating Between Screens//
+//Author: React Native//
+//Date:2025//
+//Version:1 //
+//Available:https://reactnative.dev/docs/navigation//
+//Date accessed:21/10/2025//
+
+//Title:StyleSheet//
+//Author:React Native //
+//Date:2025//
+//Version:1//
+//Available:https://reactnative.dev/docs/stylesheet//
+//Date accessed:21/10/2025//
+
