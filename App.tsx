@@ -458,7 +458,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
 }
 
 
-// 🍽️ Course Selection Screen — filters menu by course type
+// Course Selection Screen — filters menu by course type
 function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "CourseSelectionScreen">) {
   const items = route.params?.items ?? predefinedItems;
   const passedSetItems = route.params?.setItems;
@@ -577,10 +577,10 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
   const parentItems = route.params?.items ?? predefinedItems;
   const parentSetItems = route.params?.setItems;
 
-  // Local state for the form fields
+  // Local state for the form fields - CHANGED: Start with empty category
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<string>("Beverage");
+  const [category, setCategory] = useState<string>(""); // CHANGED: Empty string instead of "Starter"
   const [price, setPrice] = useState("");
   const [image, setImage] = useState("");
   const [ingredients, setIngredients] = useState("");
@@ -609,12 +609,13 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
         if (parentSetItems) parentSetItems(next);
         Alert.alert("Saved", "Menu item added.");
 
-        // Reset form fields
+        // Reset form fields - CHANGED: Reset category to empty
         setItemName("");
         setDescription("");
         setPrice("");
         setImage("");
         setIngredients("");
+        setCategory(""); // CHANGED: Reset to empty instead of "Starter"
       } else {
         Alert.alert("Invalid Price", "Price must be greater than 0");
       }
@@ -637,7 +638,7 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
           <TextInput style={styles.input} placeholder="Item Name" value={itemName} onChangeText={setItemName} />
           <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} />
 
-          {/* Category dropdown */}
+          {/* Category dropdown - UPDATED: Added placeholder item */}
           <View style={styles.pickerWrapper}>
             <Text style={styles.label}>Category</Text>
             <View style={styles.pickerContainer}>
@@ -649,6 +650,8 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
                 style={styles.pickerStyle}
                 itemStyle={{ height: 50 }}
               >
+                {/* ADDED: Placeholder item */}
+                <Picker.Item label="Select Category" value="" enabled={false} />
                 <Picker.Item label="Starter" value="Starter" />
                 <Picker.Item label="Main" value="Main" />
                 <Picker.Item label="Dessert" value="Dessert" />
