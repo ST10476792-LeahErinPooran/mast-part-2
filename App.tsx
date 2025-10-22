@@ -525,7 +525,6 @@ function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootSta
   );
 }
 
-
 // Filtered Results Screen — shows only menu items that match filters
 function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "FilteredResultsScreen">) {
   const items = route.params?.items ?? predefinedItems;
@@ -653,7 +652,7 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
                 {/* ADDED: Placeholder item */}
                 <Picker.Item label="Select Category" value="" enabled={false} />
                 <Picker.Item label="Starter" value="Starter" />
-                <Picker.Item label="Main" value="Main" />
+                <Picker.Item label="Main Course" value="Main" />
                 <Picker.Item label="Dessert" value="Dessert" />
                 <Picker.Item label="Side" value="Side" />
                 <Picker.Item label="Beverage" value="Beverage" />
