@@ -18,18 +18,18 @@ import {
   Modal,
 } from "react-native";
 
-// ✅ React Navigation imports (for screen navigation)
+//  React Navigation imports (for screen navigation)
 import { NavigationContainer } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
 
-// ✅ Dropdown selector for category choices
+//  Dropdown selector for category choices
 import { Picker } from "@react-native-picker/picker";
 
 
-// ------------------ 📘 Type Definitions ------------------
+// ------------------ Type Definitions ------------------
 // Define the structure of a single menu item object
 export type MenuItem = {
   itemName: string;
@@ -72,7 +72,7 @@ export type RootStackParamList = {
   | undefined;
 };
 
-// ------------------ ☕ Seed (Initial) Data ------------------
+// ------------------ Initial Data ------------------
 // Predefined sample items shown when the app starts
 const predefinedItems: MenuItem[] = [
   {
@@ -241,8 +241,8 @@ const predefinedItems: MenuItem[] = [
 ];
 
 
-// ------------------ 🏠 Screens ------------------
-// 🖼️ Welcome screen (first screen user sees)
+// ------------------  Screens ------------------
+//  Welcome screen (first screen user sees)
 function WelcomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView style={styles.welcomeContainer}>
@@ -503,7 +503,7 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
   );
 }
 
-// 🍰 Dish Details Screen — shows full info about one item
+//  Dish Details Screen — shows full info about one item
 function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "DishDetailsScreen">) {
   const item = route.params?.item;
   if (!item) return null;
@@ -526,7 +526,7 @@ function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootSta
 }
 
 
-// 🧾 Filtered Results Screen — shows only menu items that match filters
+// Filtered Results Screen — shows only menu items that match filters
 function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "FilteredResultsScreen">) {
   const items = route.params?.items ?? predefinedItems;
   const filterCourse = route.params?.filterCourse;
@@ -572,7 +572,7 @@ function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<Roo
 }
 
 
-// 👩‍🍳 Manage Menu Screen — allows chef to add a new menu item
+//  Manage Menu Screen — allows chef to add a new menu item
 function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "ManageScreen">) {
   const parentItems = route.params?.items ?? predefinedItems;
   const parentSetItems = route.params?.setItems;
@@ -684,7 +684,7 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
 }
 
 
-// ------------------ 🌍 App Entry & Navigation Setup ------------------
+// ------------------ App Entry & Navigation Setup ------------------
 export default function App() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
   const [items, setItems] = useState<MenuItem[]>(predefinedItems);
