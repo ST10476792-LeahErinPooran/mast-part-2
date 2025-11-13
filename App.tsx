@@ -1227,6 +1227,7 @@ subtitle: {
   smallButton: { backgroundColor: "#bf8a8aff", padding: 8, borderRadius: 8 },
   smallButtonText: { color: "#ffffffff", fontWeight: "700" },
 });
+
 //CODE ATTRIBUTION//
 
 //Title:TypeScript tutorial in Visual Studio Code//
