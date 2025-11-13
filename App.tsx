@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -16,22 +16,26 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  Dimensions,
+  Animated,
 } from "react-native";
 
-//  React Navigation imports (for screen navigation)
+// React Navigation imports (for screen navigation)
 import { NavigationContainer } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackScreenProps,
 } from "@react-navigation/native-stack";
 
-//  Dropdown selector for category choices
+// Dropdown selector for category choices
 import { Picker } from "@react-native-picker/picker";
 
+const { width: screenWidth } = Dimensions.get('window');
 
 // ------------------ Type Definitions ------------------
 // Define the structure of a single menu item object
 export type MenuItem = {
+  id: string;
   itemName: string;
   description: string;
   category: string;
@@ -44,18 +48,8 @@ export type MenuItem = {
 // Define all navigation routes (and what parameters each route accepts)
 export type RootStackParamList = {
   WelcomeScreen: undefined;
-  HomeScreen:
-  | {
-    items: MenuItem[];
-    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-  }
-  | undefined;
-  CourseSelectionScreen:
-  | {
-    items: MenuItem[];
-    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-  }
-  | undefined;
+  HomeScreen: undefined;
+  CourseSelectionScreen: undefined;
   DishDetailsScreen: { item: MenuItem } | undefined;
   FilteredResultsScreen:
   | {
@@ -64,207 +58,376 @@ export type RootStackParamList = {
     maxPrice?: number;
   }
   | undefined;
-  ManageScreen:
-  | {
-    items: MenuItem[];
-    setItems: React.Dispatch<React.SetStateAction<MenuItem[]>>;
-  }
-  | undefined;
+  ManageScreen: undefined;
 };
 
 // ------------------ Initial Data ------------------
-// Predefined sample items shown when the app starts
 const predefinedItems: MenuItem[] = [
   {
+    id: "1",
     itemName: "Grilled Calamari",
-    description:
-      "Grilled calamari with lemon and cilantro",
+    description: "Grilled calamari with lemon and cilantro",
     category: "Starter",
     price: 55,
     intensity: "Mild",
-    image:
-      "https://www.thetastychilli.com/wp-content/uploads/2022/01/grilled-calamari-rings-lemon.jpg",
+    image: "https://www.thetastychilli.com/wp-content/uploads/2022/01/grilled-calamari-rings-lemon.jpg",
     ingredients: ["Raw calamari rings", "Lemon juice", "Olive oil", "Dried oregano", "Garlic", "Red pepper flakes", "Cilantro", "Black pepper", "Seasalt flakes"],
   },
-
-   {
+  {
+    id: "2",
     itemName: "Chicken wings",
-    description:
-      "Soy glazed crispy chicken wings, topped with sesame seeds & coriander",
+    description: "Soy glazed crispy chicken wings, topped with sesame seeds & coriander",
     category: "Starter",
     price: 70,
     intensity: "Medium",
-    image:
-      "https://www.allrecipes.com/thmb/3sjLmvPzxHf3ID4-XqjsHeXcxrg=/0x512/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/AR-230873-amazing-and-easy-chicken-wings-ddmfs-4x3-8612d3a676444dc8b5e7933cf53be575.jpg",
+    image: "https://www.allrecipes.com/thmb/3sjLmvPzxHf3ID4-XqjsHeXcxrg=/0x512/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/AR-230873-amazing-and-easy-chicken-wings-ddmfs-4x3-8612d3a676444dc8b5e7933cf53be575.jpg",
     ingredients: ["Chicken wings", "Soy sauce", "Sugar", "Sesame seeds", "Cilantro"],
   },
-
-   {
+  {
+    id: "3",
     itemName: "Wagyu beef potstickers",
-    description:
-      "Seared & steamed. Served with kimchi & Indonesian soya dipping sauce",
+    description: "Seared & steamed. Served with kimchi & Indonesian soya dipping sauce",
     category: "Starter",
     price: 85,
     intensity: "Medium",
-    image:
-      "https://tarasmulticulturaltable.com/wp-content/uploads/2019/02/Wagyu-Beef-Dumplings-10-of-10.jpg",
+    image: "https://tarasmulticulturaltable.com/wp-content/uploads/2019/02/Wagyu-Beef-Dumplings-10-of-10.jpg",
     ingredients: ["Wagyu beef", "Soy sauce", "Black pepper", "Gyoza wrappers", "Rosemary"],
   },
-
   {
+    id: "4",
     itemName: "Prawn pasta",
-    description:
-      "Fresh tagliatelle, with whole fried prawns, Parmesan, parsley, chilli & garlic butter",
+    description: "Fresh tagliatelle, with whole fried prawns, Parmesan, parsley, chilli & garlic butter",
     category: "Main",
     price: 175,
     intensity: "Medium",
-    image:
-      "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/prawn-harissa-spaghetti-d29786f.jpg?quality=90&webp=true&resize=440,400",
-    ingredients: ["Tagliatelle","Prawns", "Parmesan Cheese","Parsley","Chilli Pepper","Garlic butter"],
+    image: "https://images.immediate.co.uk/production/volatile/sites/30/2020/08/prawn-harissa-spaghetti-d29786f.jpg?quality=90&webp=true&resize=440,400",
+    ingredients: ["Tagliatelle", "Prawns", "Parmesan Cheese", "Parsley", "Chilli Pepper", "Garlic butter"],
   },
-
   {
+    id: "5",
     itemName: "Earth & Ocean",
-    description:
-      "Grilled beef rib eye steak & prawns with lemon & herb butter, served with your choice of side",
+    description: "Grilled beef rib eye steak & prawns with lemon & herb butter, served with your choice of side",
     category: "Main",
     price: 195,
     intensity: "Mild",
-    image:
-      "https://cookingwithcurls.com/wp-content/uploads/2013/05/Grilled-Steak-and-Shrimp.-cookingwithcurls.com_.jpg",
+    image: "https://cookingwithcurls.com/wp-content/uploads/2013/05/Grilled-Steak-and-Shrimp.-cookingwithcurls.com_.jpg",
     ingredients: ["Beef Rib Eye Steak", "Prawns", "Butter", "Lemon", "Herbs"],
   },
-
   {
+    id: "6",
     itemName: "Crispy chicken burger",
-    description:
-      "Toasted artisan brioche bun, crunchy chicken breast, butter lettuce, avo, tomato, burger sauce, served with your choice of side",
+    description: "Toasted artisan brioche bun, crunchy chicken breast, butter lettuce, avo, tomato, burger sauce, served with your choice of side",
     category: "Main",
     price: 167,
     intensity: "Mild",
-    image:
-      "https://i.pinimg.com/736x/4e/82/e1/4e82e1301bb30942fa4e7c78754aa45f.jpg",
-    ingredients:["Brioche Bun", "Chicken Breast", "Butter Lettuce", "Avocado", "Tomato", "Burger Sauce"],
+    image: "https://i.pinimg.com/736x/4e/82/e1/4e82e1301bb30942fa4e7c78754aa45f.jpg",
+    ingredients: ["Brioche Bun", "Chicken Breast", "Butter Lettuce", "Avocado", "Tomato", "Burger Sauce"],
   },
-
-{
+  {
+    id: "7",
     itemName: "Mocha Affogato",
-    description:
-      "Vanilla bean ice cream served on chocolate ganache with a double shot of espresso & hazelnut praline",
+    description: "Vanilla bean ice cream served on chocolate ganache with a double shot of espresso & hazelnut praline",
     category: "Dessert",
     price: 50,
-    image:
-      "https://foodandtravel.com/assets/img/content/recipes/Mocha-affogato.jpg",
-    ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
+    image: "https://foodandtravel.com/assets/img/content/recipes/Mocha-affogato.jpg",
+    ingredients: ["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
   },
-
   {
+    id: "8",
     itemName: "Chocolate Brownie with Honeycomb Crunch",
-    description:
-      "Dark chocolate brownie with caramel honeycomb crunch & Jack Daniels butterscotch sauce, served with vanilla bean ice cream",
+    description: "Dark chocolate brownie with caramel honeycomb crunch & Jack Daniels butterscotch sauce, served with vanilla bean ice cream",
     category: "Dessert",
     price: 70,
-    image:
-      "https://mymorningmocha.com/wp-content/uploads/2022/07/Honeycomb-brownie-recipe.jpg",
-    ingredients:["Dark Chocolate Brownie", "Caramel Honeycomb Crunch", "Jack Daniels Butterscotch Sauce", "Vanilla Bean Ice Cream"],
+    image: "https://mymorningmocha.com/wp-content/uploads/2022/07/Honeycomb-brownie-recipe.jpg",
+    ingredients: ["Dark Chocolate Brownie", "Caramel Honeycomb Crunch", "Jack Daniels Butterscotch Sauce", "Vanilla Bean Ice Cream"],
   },
-
   {
+    id: "9",
     itemName: "Ginger & Miso Caramel Cheesecake",
-    description:
-      "A creamy salted miso caramel cheesecake with a hint of orange on ginger biscuit crust",
+    description: "A creamy salted miso caramel cheesecake with a hint of orange on ginger biscuit crust",
     category: "Dessert",
     price: 105,
-    image:
-      "https://www.marionskitchen.com/wp-content/uploads/2021/08/MIso-Caramel-Cheesecake1957.jpeg",
-    ingredients:["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
+    image: "https://www.marionskitchen.com/wp-content/uploads/2021/08/MIso-Caramel-Cheesecake1957.jpeg",
+    ingredients: ["Vanilla Bean Ice Cream", "Chocolate Ganache", "Espresso", "Hazelnut Praline"],
   },
-
   {
+    id: "10",
     itemName: "Churros",
-    description:
-      "Dusted in sugar, cinnamon served with a dark chocolate ganache dip",
+    description: "Dusted in sugar, cinnamon served with a dark chocolate ganache dip",
     category: "Dessert",
     price: 70,
-    image:
-      "https://stellanspice.com/wp-content/uploads/2021/12/IMG_0808-1-1154x1536.jpg",
-    ingredients:["Sugar", "Cinnamon", "Dark Chocolate Ganache"],
+    image: "https://stellanspice.com/wp-content/uploads/2021/12/IMG_0808-1-1154x1536.jpg",
+    ingredients: ["Sugar", "Cinnamon", "Dark Chocolate Ganache"],
   },
-
   {
+    id: "11",
     itemName: "Garlic Potato Mash",
-    description:
-      "Creamy potato mash infused with roasted garlic",
+    description: "Creamy potato mash infused with roasted garlic",
     category: "Sides",
     price: 45,
     intensity: "Mild",
-    image:
-      "https://www.allrecipes.com/thmb/QH_JKQhpxGnX247VU58OVkOW0g8=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/18290-garlic-mashed-potatoes-ddmfs-beauty2-4x3-0327-2-47384a10cded40ae90e574bc7fdb9433.jpg",
-    ingredients:["Potatoes", "Garlic", "Cream", "Butter"],
+    image: "https://www.allrecipes.com/thmb/QH_JKQhpxGnX247VU58OVkOW0g8=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/18290-garlic-mashed-potatoes-ddmfs-beauty2-4x3-0327-2-47384a10cded40ae90e574bc7fdb9433.jpg",
+    ingredients: ["Potatoes", "Garlic", "Cream", "Butter"],
   },
-
   {
+    id: "12",
     itemName: "Kimchi Mac & cheese",
-    description:
-      "Classic Mac & cheese with a twist of kimchi & a crunchy gratin topping",
+    description: "Classic Mac & cheese with a twist of kimchi & a crunchy gratin topping",
     category: "Sides",
     price: 65,
     intensity: "Hot",
-    image:
-      "https://takestwoeggs.com/wp-content/uploads/2021/11/Kimchi-Mac-and-Cheese-Takestwoeggs-FINAL-sq.jpg",
-    ingredients:["Potatoes", "Garlic", "Cream", "Butter"],
+    image: "https://takestwoeggs.com/wp-content/uploads/2021/11/Kimchi-Mac-and-Cheese-Takestwoeggs-FINAL-sq.jpg",
+    ingredients: ["Potatoes", "Garlic", "Cream", "Butter"],
   },
-
   {
+    id: "13",
     itemName: "Smashed Cucumber Salad",
-    description:
-      "Crushed cucumber soaked in spicy Korean dressing with toasted sesame seeds",
+    description: "Crushed cucumber soaked in spicy Korean dressing with toasted sesame seeds",
     category: "Sides",
     price: 50,
     intensity: "Medium",
-    image:
-      "https://healthynibblesandbits.com/wp-content/uploads/2021/07/Smashed-Cucumber-Salad-6.jpg",
-    ingredients:["Cucumber", "Korean Chili Flakes (Gochugaru)", "Soy Sauce", "Vinegar", "Sesame Seeds", "Garlic", "Sugar", "Sesame Oil"],
+    image: "https://healthynibblesandbits.com/wp-content/uploads/2021/07/Smashed-Cucumber-Salad-6.jpg",
+    ingredients: ["Cucumber", "Korean Chili Flakes (Gochugaru)", "Soy Sauce", "Vinegar", "Sesame Seeds", "Garlic", "Sugar", "Sesame Oil"],
   },
-
   {
+    id: "14",
     itemName: "Crispy Patatas Bravas",
-    description:
-      "Spiced potatoes with aioli & bravas sauce",
+    description: "Spiced potatoes with aioli & bravas sauce",
     category: "Sides",
     price: 70,
     intensity: "Medium",
-    image:
-      "https://img-cdn.oliveoiltimes.com/cb:2sys.247e0/w:1620/h:1080/q:67/ig:avif/id:203914907dbe14c81bbba48b29665010/https://www.oliveoiltimes.com/brava.jpg",
-    ingredients:["Potatoes", "Paprika", "Garlic", "Olive Oil", "Mayonnaise", "Tomato", "Chili"],
+    image: "https://img-cdn.oliveoiltimes.com/cb:2sys.247e0/w:1620/h:1080/q:67/ig:avif/id:203914907dbe14c81bbba48b29665010/https://www.oliveoiltimes.com/brava.jpg",
+    ingredients: ["Potatoes", "Paprika", "Garlic", "Olive Oil", "Mayonnaise", "Tomato", "Chili"],
   },
 ];
 
+// ------------------ Utility Functions ------------------
+const MenuUtils = {
+  // Function to search items by name or description
+  searchItems: (items: MenuItem[], searchTerm: string): MenuItem[] => {
+    const term = searchTerm.toLowerCase();
+    return items.filter(item => 
+      item.itemName.toLowerCase().includes(term) ||
+      item.description.toLowerCase().includes(term) ||
+      item.ingredients?.some(ingredient => ingredient.toLowerCase().includes(term))
+    );
+  },
 
-// ------------------  Screens ------------------
-//  Welcome screen (first screen user sees)
+  // Function to validate menu item
+  validateMenuItem: (item: Partial<MenuItem>): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    if (!item.itemName || item.itemName.trim().length === 0) {
+      errors.push("Item name is required");
+    }
+    
+    if (!item.description || item.description.trim().length === 0) {
+      errors.push("Description is required");
+    }
+    
+    if (!item.category || item.category.trim().length === 0) {
+      errors.push("Category is required");
+    }
+    
+    if (!item.price || item.price <= 0) {
+      errors.push("Price must be greater than 0");
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  },
+
+  // Function to generate unique ID
+  generateId: (): string => {
+    return `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  },
+
+  // Function to sort items by various criteria
+  sortItems: (items: MenuItem[], criteria: 'name' | 'price' | 'category'): MenuItem[] => {
+    const sorted = [...items];
+    
+    switch (criteria) {
+      case 'name':
+        sorted.sort((a, b) => a.itemName.localeCompare(b.itemName));
+        break;
+      case 'price':
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case 'category':
+        sorted.sort((a, b) => a.category.localeCompare(b.category));
+        break;
+    }
+    
+    return sorted;
+  },
+};
+
+// ------------------ Global State Management ------------------
+const AppContext = React.createContext<{
+  items: MenuItem[];
+  addItem: (item: MenuItem) => void;
+  removeItem: (id: string) => void;
+  updateItem: (id: string, updatedItem: Partial<MenuItem>) => void;
+  searchItems: (searchTerm: string) => MenuItem[];
+}>({
+  items: [],
+  addItem: () => { },
+  removeItem: () => { },
+  updateItem: () => { },
+  searchItems: () => [],
+});
+
+const useApp = () => React.useContext(AppContext);
+
+function AppProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<MenuItem[]>(predefinedItems);
+
+  const addItem = (item: MenuItem) => {
+    setItems(prev => [...prev, item]);
+  };
+
+  const removeItem = (id: string) => {
+    Alert.alert("Remove Item", "Are you sure you want to remove this item?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: () => setItems(prev => prev.filter(item => item.id !== id))
+      },
+    ]);
+  };
+
+  // Function to update existing item
+  const updateItem = (id: string, updatedItem: Partial<MenuItem>) => {
+    setItems(prev => prev.map(item => 
+      item.id === id ? { ...item, ...updatedItem } : item
+    ));
+  };
+
+  // Search function using MenuUtils
+  const searchItems = (searchTerm: string) => {
+    return MenuUtils.searchItems(items, searchTerm);
+  };
+
+  return (
+    <AppContext.Provider value={{ 
+      items, 
+      addItem, 
+      removeItem, 
+      updateItem,
+      searchItems,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+// ------------------ Average Price Carousel Component ------------------
+function AveragePriceCarousel({ averagePrices }: { averagePrices: { [key: string]: number } }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<FlatList>(null);
+
+  const averagePriceData = Object.entries(averagePrices).map(([category, average]) => ({
+    category,
+    average: Math.round(average),
+  }));
+
+  const onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  );
+
+  const onMomentumScrollEnd = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset;
+    const viewSize = event.nativeEvent.layoutMeasurement;
+    const pageNum = Math.floor(contentOffset.x / viewSize.width);
+    setCurrentIndex(pageNum);
+  };
+
+  const renderItem = ({ item, index }: { item: { category: string; average: number }; index: number }) => (
+    <View style={styles.carouselItem}>
+      <Text style={styles.carouselCategory}>{item.category}</Text>
+      <Text style={styles.carouselPrice}>R{item.average}</Text>
+      <Text style={styles.carouselLabel}>Average Price</Text>
+    </View>
+  );
+
+  const renderPagination = () => {
+    return (
+      <View style={styles.paginationContainer}>
+        {averagePriceData.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.paginationDot,
+              currentIndex === index ? styles.paginationDotActive : styles.paginationDotInactive
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.carouselContainer}>
+      <Text style={styles.carouselTitle}>Average Prices by Course</Text>
+      
+      <FlatList
+        ref={flatListRef}
+        data={averagePriceData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.category}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+        scrollEventThrottle={16}
+      />
+      
+      {renderPagination()}
+    </View>
+  );
+}
+
+// ------------------ Search Component ------------------
+function SearchBar({ onSearch }: { onSearch: (results: MenuItem[]) => void }) {
+  const { searchItems } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (text: string) => {
+    setSearchTerm(text);
+    const results = searchItems(text);
+    onSearch(results);
+  };
+
+  return (
+    <View style={styles.searchContainer}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search by name/description/ingredients"
+        value={searchTerm}
+        onChangeText={handleSearch}
+      />
+    </View>
+  );
+}
+
+// ------------------ Screens ------------------
 function WelcomeScreen({ navigation }: { navigation: any }) {
   return (
     <SafeAreaView style={styles.welcomeContainer}>
-      {/* Background image */}
       <Image
         source={{
           uri: "https://i.pinimg.com/1200x/33/94/01/339401958ca2f8ecb0ffe136afb70dd8.jpg",
         }}
         style={styles.heroImage}
       />
-      {/* Overlay with text and button */}
       <View style={styles.overlay}>
-        <Text style={styles.welcomeTitle}>Welcome 
-to 
- Christoffel's 
-Culinary
- Experience</Text>
-
-        <Text style={styles.welcomeText}>
-          Where every flavor tells a story
-        </Text>
-        {/* Button navigates to the HomeScreen */}
+        <Text style={styles.welcomeTitle}>Welcome to Christoffel's Culinary Experience</Text>
+        <Text style={styles.welcomeText}>Where every flavor tells a story</Text>
         <TouchableOpacity
           style={styles.startButton}
           onPress={() => navigation.navigate("HomeScreen")}
@@ -276,67 +439,77 @@ Culinary
   );
 }
 
-// 🏡 Main Home Screen — shows menu list
-function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "HomeScreen">) {
-  // If items were passed from navigation, use them; otherwise use predefined
-  const passedItems = route.params?.items;
-  const passedSetItems = route.params?.setItems;
+// Main Home Screen
+function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "HomeScreen">) {
+  const { items, removeItem } = useApp();
 
-  const [items, setItems] = useState<MenuItem[]>(passedItems ?? predefinedItems);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [maxPrice, setMaxPrice] = useState<string>("");
-  const [filteredItems, setFilteredItems] = useState<MenuItem[]>(passedItems ?? predefinedItems);
+  const [filteredItems, setFilteredItems] = useState<MenuItem[]>(items);
+  const [sortCriteria, setSortCriteria] = useState<'name' | 'price' | 'category'>('name');
 
-  // Sync changes back to parent state if available
-  const updateItems = (next: MenuItem[]) => {
-    setItems(next);
-    setFilteredItems(next);
-    if (passedSetItems) passedSetItems(next);
+  // Calculate average prices by category
+  const calculateAveragePrices = () => {
+    const categories = Array.from(new Set(items.map(item => item.category)));
+    const averages: { [key: string]: number } = {};
+    
+    categories.forEach(category => {
+      const categoryItems = items.filter(item => item.category === category);
+      const total = categoryItems.reduce((sum, item) => sum + item.price, 0);
+      averages[category] = total / categoryItems.length;
+    });
+    
+    return averages;
   };
 
-  // Remove an item with confirmation alert
-  const removeItem = (index: number) => {
-    Alert.alert("Remove Item", "Are you sure you want to remove this item?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Yes", onPress: () => updateItems(items.filter((_, i) => i !== index)) },
-    ]);
-  };
+  const averagePrices = calculateAveragePrices();
 
-  // Apply filters
+  // Update filtered items when items or filters change
+  React.useEffect(() => {
+    applyFilters();
+  }, [items, selectedCategory, maxPrice, sortCriteria]);
+
   const applyFilters = () => {
     let filtered = [...items];
-    
-    // Filter by category
+
     if (selectedCategory !== "All") {
       filtered = filtered.filter(item => item.category === selectedCategory);
     }
-    
-    // Filter by price
+
     if (maxPrice) {
       const maxPriceValue = parseFloat(maxPrice);
       filtered = filtered.filter(item => item.price <= maxPriceValue);
     }
+
+    // Apply sorting (only ascending now)
+    filtered = MenuUtils.sortItems(filtered, sortCriteria);
     
     setFilteredItems(filtered);
-    setFilterModalVisible(false);
   };
 
-  // Reset filters
   const resetFilters = () => {
     setSelectedCategory("All");
     setMaxPrice("");
-    setFilteredItems(items);
+    setSortCriteria('name');
     setFilterModalVisible(false);
   };
 
-  // Get unique categories for filter
+  const handleSearch = (results: MenuItem[]) => {
+    setFilteredItems(results);
+  };
+
   const categories = ["All", ...Array.from(new Set(items.map(item => item.category)))];
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.mainTitle}></Text>
-      <Text style={styles.subtitle}> ❈ Hearty Meals   ❈ Warm Atmosphere                  ❈ Cherished Moments</Text>
+      {/* Average Price Carousel */}
+      <View style={styles.carouselWrapper}>
+        <AveragePriceCarousel averagePrices={averagePrices} />
+      </View>
+
+      {/* Search Bar */}
+      <SearchBar onSearch={handleSearch} />
 
       {/* Item Counter and Filter Button Row */}
       <View style={styles.headerRow}>
@@ -345,16 +518,16 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
             Total Items: {items.length} | Showing: {filteredItems.length}
           </Text>
         </View>
-        
+
         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
         >
-          <Text style={styles.filterButtonText}>Filter Menu</Text>
+          <Text style={styles.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Filter Modal */}
+      {/* Enhanced Filter Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -364,8 +537,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Filter Menu</Text>
-            
-            {/* Category Filter */}
+
             <Text style={styles.filterLabel}>Category</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -379,7 +551,6 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
               </Picker>
             </View>
 
-            {/* Price Filter */}
             <Text style={styles.filterLabel}>Max Price</Text>
             <TextInput
               style={styles.input}
@@ -389,16 +560,28 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
               onChangeText={setMaxPrice}
             />
 
-            {/* Filter Buttons */}
+            <Text style={styles.filterLabel}>Sort By</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={sortCriteria}
+                onValueChange={(itemValue) => setSortCriteria(itemValue)}
+                style={styles.pickerStyle}
+              >
+                <Picker.Item label="Name" value="name" />
+                <Picker.Item label="Price" value="price" />
+                <Picker.Item label="Category" value="category" />
+              </Picker>
+            </View>
+
             <View style={styles.filterButtonsContainer}>
-              <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+              <TouchableOpacity style={styles.applyButton} onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity style={styles.resetButton} onPress={resetFilters}>
-                <Text style={styles.resetButtonText}>Reset</Text>
+                <Text style={styles.resetButtonText}>Reset All</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity style={styles.modalCancelButton} onPress={() => setFilterModalVisible(false)}>
                 <Text style={styles.modalCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
@@ -410,8 +593,8 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
       {/* List of menu items */}
       <FlatList
         data={filteredItems}
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item, index }) => (
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
           <View style={styles.card}>
             <Image source={{ uri: item.image || "" }} style={styles.cardImage} />
             <View style={styles.cardContent}>
@@ -421,7 +604,6 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
                 {item.category} · R{item.price} · {item.intensity}
               </Text>
 
-              {/* Action buttons for each menu item */}
               <View style={{ flexDirection: "row", marginTop: 10 }}>
                 <TouchableOpacity
                   style={[styles.smallButton]}
@@ -432,7 +614,7 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
 
                 <TouchableOpacity
                   style={[styles.smallButton, { marginLeft: 8 }]}
-                  onPress={() => removeItem(index)}
+                  onPress={() => removeItem(item.id)}
                 >
                   <Text style={styles.smallButtonText}>Remove</Text>
                 </TouchableOpacity>
@@ -442,13 +624,11 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
         )}
       />
 
-      {/* Navigation buttons to other screens */}
+      {/* ONLY View Courses button at the bottom of Home Screen */}
       <View style={{ marginTop: 10 }}>
         <TouchableOpacity
           style={styles.rowButton}
-          onPress={() =>
-            navigation.navigate("CourseSelectionScreen", { items, setItems })
-          }
+          onPress={() => navigation.navigate("CourseSelectionScreen")}
         >
           <Text style={styles.rowButtonText}>View Courses</Text>
         </TouchableOpacity>
@@ -457,13 +637,10 @@ function HomeScreen({ navigation, route }: NativeStackScreenProps<RootStackParam
   );
 }
 
+// Course Selection Screen
+function CourseSelectionScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "CourseSelectionScreen">) {
+  const { items } = useApp();
 
-// Course Selection Screen — filters menu by course type
-function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "CourseSelectionScreen">) {
-  const items = route.params?.items ?? predefinedItems;
-  const passedSetItems = route.params?.setItems;
-
-  // Collect unique category names (Starter, Main, etc.)
   const categories = Array.from(new Set(items.map((i) => i.category)));
 
   return (
@@ -471,7 +648,6 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
       <Text style={styles.mainTitle}>Course Selection</Text>
       <Text style={styles.subtitle}>Browse by course</Text>
 
-      {/* Show one button per category */}
       {categories.map((cat) => (
         <TouchableOpacity
           key={cat}
@@ -482,28 +658,25 @@ function CourseSelectionScreen({ navigation, route }: NativeStackScreenProps<Roo
         </TouchableOpacity>
       ))}
 
-      {/* Edit Menu Button */}
+      {/* Edit Menu button added to Course Selection Screen */}
       <TouchableOpacity
         style={[styles.rowButton, { marginTop: 20 }]}
-        onPress={() =>
-          navigation.navigate("ManageScreen", { items, setItems: passedSetItems })
-        }
+        onPress={() => navigation.navigate("ManageScreen")}
       >
         <Text style={styles.rowButtonText}>Edit Menu</Text>
       </TouchableOpacity>
 
-      {/* Back button */}
       <TouchableOpacity
-        style={[styles.backButton, { marginTop: 8 }]}
+        style={[styles.backButton, { marginTop: 10 }]}
         onPress={() => navigation.goBack()}
       >
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={styles.backButtonText}>Back to Home</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-//  Dish Details Screen — shows full info about one item
+// Dish Details Screen
 function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "DishDetailsScreen">) {
   const item = route.params?.item;
   if (!item) return null;
@@ -525,13 +698,12 @@ function DishDetailsScreen({ navigation, route }: NativeStackScreenProps<RootSta
   );
 }
 
-// Filtered Results Screen — shows only menu items that match filters
+// Filtered Results Screen
 function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "FilteredResultsScreen">) {
-  const items = route.params?.items ?? predefinedItems;
+  const { items } = useApp();
   const filterCourse = route.params?.filterCourse;
   const maxPrice = route.params?.maxPrice;
 
-  // Apply filtering logic based on category and/or price
   const filtered = items.filter((i) => {
     if (filterCourse && i.category !== filterCourse) return false;
     if (typeof maxPrice === "number" && i.price > maxPrice) return false;
@@ -545,10 +717,9 @@ function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<Roo
         {filterCourse ? `Course: ${filterCourse}` : "All courses"} {maxPrice ? `· Max R${maxPrice}` : ""}
       </Text>
 
-      {/* Show filtered menu items */}
       <FlatList
         data={filtered}
-        keyExtractor={(_, i) => i.toString()}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -570,60 +741,66 @@ function FilteredResultsScreen({ navigation, route }: NativeStackScreenProps<Roo
   );
 }
 
+// Manage Menu Screen
+function ManageMenuScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "ManageScreen">) {
+  const { addItem } = useApp();
 
-//  Manage Menu Screen — allows chef to add a new menu item
-function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "ManageScreen">) {
-  const parentItems = route.params?.items ?? predefinedItems;
-  const parentSetItems = route.params?.setItems;
-
-  // Local state for the form fields - CHANGED: Start with empty category
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<string>(""); // CHANGED: Empty string instead of "Starter"
+  const [category, setCategory] = useState<string>("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState("");
   const [ingredients, setIngredients] = useState("");
 
-  // Save button handler
   const handleSubmit = () => {
-    if (itemName && description && category && price) {
-      const priceValue = parseFloat(price);
-      if (priceValue > 0) {
-        // Assign an "intensity" label based on price range
-        const intensity = priceValue < 45 ? "Mild" : priceValue < 65 ? "Balanced" : "Strong";
+    // Use the validation function
+    const validation = MenuUtils.validateMenuItem({
+      itemName,
+      description,
+      category,
+      price: parseFloat(price)
+    });
 
-        // Create new menu item object
-        const newItem: MenuItem = {
-          itemName,
-          description,
-          category,
-          price: priceValue,
-          intensity,
-          image,
-          ingredients: ingredients.split(",").map((i) => i.trim()),
-        };
+    if (!validation.isValid) {
+      Alert.alert("Validation Error", validation.errors.join('\n'));
+      return;
+    }
 
-        // Update parent list with new item
-        const next = [...parentItems, newItem];
-        if (parentSetItems) parentSetItems(next);
-        Alert.alert("Saved", "Menu item added.");
+    const priceValue = parseFloat(price);
+    if (priceValue > 0) {
+      const intensity = priceValue < 45 ? "Mild" : priceValue < 65 ? "Balanced" : "Strong";
 
-        // Reset form fields - CHANGED: Reset category to empty
-        setItemName("");
-        setDescription("");
-        setPrice("");
-        setImage("");
-        setIngredients("");
-        setCategory(""); // CHANGED: Reset to empty instead of "Starter"
-      } else {
-        Alert.alert("Invalid Price", "Price must be greater than 0");
-      }
+      const newItem: MenuItem = {
+        id: MenuUtils.generateId(), // Use the new ID generator
+        itemName,
+        description,
+        category,
+        price: priceValue,
+        intensity,
+        image: image || "https://via.placeholder.com/300x200?text=No+Image",
+        ingredients: ingredients.split(",").map((i) => i.trim()),
+      };
+
+      addItem(newItem);
+      Alert.alert("Success", "Menu item added successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            setItemName("");
+            setDescription("");
+            setPrice("");
+            setImage("");
+            setIngredients("");
+            setCategory("");
+            navigation.navigate("HomeScreen");
+          }
+        }
+      ]);
     } else {
-      Alert.alert("Missing Fields", "Please fill out all details before saving.");
+      Alert.alert("Invalid Price", "Price must be greater than 0");
     }
   };
 
-  // Form UI layout
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -631,15 +808,13 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={styles.formContainer}>
-          <Text style={styles.formHeader}>Edit Menu</Text>
+          <Text style={styles.formHeader}>Add New Menu Item</Text>
 
-          {/* Input fields for item details */}
-          <TextInput style={styles.input} placeholder="Item Name" value={itemName} onChangeText={setItemName} />
-          <TextInput style={styles.input} placeholder="Description" value={description} onChangeText={setDescription} />
+          <TextInput style={styles.input} placeholder="Item Name *" value={itemName} onChangeText={setItemName} />
+          <TextInput style={styles.input} placeholder="Description *" value={description} onChangeText={setDescription} />
 
-          {/* Category dropdown - UPDATED: Added placeholder item */}
           <View style={styles.pickerWrapper}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>Category *</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={category}
@@ -649,32 +824,28 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
                 style={styles.pickerStyle}
                 itemStyle={{ height: 50 }}
               >
-                {/* ADDED: Placeholder item */}
-                <Picker.Item label="Select Category" value="" enabled={false} />
+                <Picker.Item label="Select Category *" value="" enabled={false} />
                 <Picker.Item label="Starter" value="Starter" />
                 <Picker.Item label="Main Course" value="Main" />
                 <Picker.Item label="Dessert" value="Dessert" />
-                <Picker.Item label="Side" value="Side" />
+                <Picker.Item label="Sides" value="Sides" />
                 <Picker.Item label="Beverage" value="Beverage" />
               </Picker>
             </View>
           </View>
 
-          {/* Other input fields */}
-          <TextInput style={styles.input} placeholder="Price (e.g. 50)" keyboardType="numeric" value={price} onChangeText={setPrice} />
+          <TextInput style={styles.input} placeholder="Price * (e.g. 50)" keyboardType="numeric" value={price} onChangeText={setPrice} />
           <TextInput style={styles.input} placeholder="Ingredients (comma separated)" value={ingredients} onChangeText={setIngredients} />
           <TextInput style={styles.input} placeholder="Image URL" value={image} onChangeText={setImage} />
 
-          {/* Image preview */}
           {image ? <Image source={{ uri: image }} style={styles.imagePreview} /> : null}
 
-          {/* Action buttons */}
           <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
             <Text style={styles.saveButtonText}>Save Item</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.cancelButtonText}>Back</Text>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -682,69 +853,62 @@ function ManageMenuScreen({ navigation, route }: NativeStackScreenProps<RootStac
   );
 }
 
-
 // ------------------ App Entry & Navigation Setup ------------------
 export default function App() {
   const Stack = createNativeStackNavigator<RootStackParamList>();
-  const [items, setItems] = useState<MenuItem[]>(predefinedItems);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="WelcomeScreen">
-        {/* Screen registrations with options */}
-        <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
-        <Stack.Screen
-          name="HomeScreen"
-          component={HomeScreen}
-          initialParams={{ items, setItems }}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="CourseSelectionScreen" 
-          component={CourseSelectionScreen} 
-          options={{ 
-            title: "Courses", 
-            headerStyle: { backgroundColor: "#832e2eed" }, 
-            headerTintColor: "#ffffffff" 
-          }} 
-        />
-        <Stack.Screen 
-          name="DishDetailsScreen" 
-          component={DishDetailsScreen} 
-          options={{ 
-            title: "Dish Details", 
-            headerStyle: { backgroundColor: "#832e2eed" }, 
-            headerTintColor: "#ffffffff" 
-          }} 
-        />
-        <Stack.Screen 
-          name="FilteredResultsScreen" 
-          component={FilteredResultsScreen} 
-          options={{ 
-            title: "Filtered Results", 
-            headerStyle: { backgroundColor: "#832e2eed" }, 
-            headerTintColor: "#ffffffff" 
-          }} 
-        />
-        <Stack.Screen
-          name="ManageScreen"
-          component={ManageMenuScreen}
-          initialParams={{ items, setItems }}
-          options={{ title: "Chef Edit", headerStyle: { backgroundColor: "#832e2eed" }, headerTintColor: "#ffffffff" }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <AppProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="WelcomeScreen">
+          <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen
+            name="CourseSelectionScreen"
+            component={CourseSelectionScreen}
+            options={{
+              title: "Courses",
+              headerStyle: { backgroundColor: "#832e2eed" },
+              headerTintColor: "#ffffffff"
+            }}
+          />
+          <Stack.Screen
+            name="DishDetailsScreen"
+            component={DishDetailsScreen}
+            options={{
+              title: "Dish Details",
+              headerStyle: { backgroundColor: "#832e2eed" },
+              headerTintColor: "#ffffffff"
+            }}
+          />
+          <Stack.Screen
+            name="FilteredResultsScreen"
+            component={FilteredResultsScreen}
+            options={{
+              title: "Filtered Results",
+              headerStyle: { backgroundColor: "#832e2eed" },
+              headerTintColor: "#ffffffff"
+            }}
+          />
+          <Stack.Screen
+            name="ManageScreen"
+            component={ManageMenuScreen}
+            options={{
+              title: "Add New Item",
+              headerStyle: { backgroundColor: "#832e2eed" },
+              headerTintColor: "#ffffffff"
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AppProvider>
   );
 }
 
-// ------------------ Styles ------------------
+// ------------------ Updated Styles ------------------
 const styles = StyleSheet.create({
-  // ==================== WELCOME SCREEN STYLES ====================
-  // Welcome screen container
   welcomeContainer: { flex: 1, backgroundColor: "#985447ff" },
-  // Background hero image on welcome screen
   heroImage: { width: "100%", height: "100%", position: "absolute" },
-  // Dark overlay on top of hero image
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -752,32 +916,133 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 30,
   },
-  // Main welcome title text
-  welcomeTitle: { color: "#ffffffff", fontSize: 34, fontWeight: "700", textAlign: "center", marginBottom: 10 },
-  // Subtitle text on welcome screen
-  welcomeText: { color: "#ffffffff", fontSize: 16, textAlign: "center", marginBottom: 30 },
-  // Start/explore menu button
-  startButton: { backgroundColor: "#4d4132ff", paddingVertical: 14, paddingHorizontal: 40, borderRadius: 30 },
-  // Start button text
-  startText: { color: "#fffefdff", fontWeight: "bold", fontSize: 18 },
-
-  // ==================== COMMON CONTAINER STYLES ====================
-  // Main container for most screens
-  container: { flex: 1, backgroundColor: "#f6ddddff", padding: 15 },
-  // Main page title (large heading)
-  mainTitle: { fontSize: 28, fontWeight: "800", color: "#312424ed", textAlign: "center" },
-  // Subtitle text below main title
-  subtitle: { textAlign: "center", color: "#140a0aed", marginBottom: 15, fontSize: 15 },
-
-  // ==================== HEADER ROW & COUNTER STYLES ====================
-  // Container for counter and filter button row
+  welcomeTitle: { 
+  color: "#ffffffff", 
+  fontSize: 34, 
+  fontWeight: "700", 
+  textAlign: "center", 
+  marginBottom: 10 
+},
+welcomeText: { 
+  color: "#ffffffff", 
+  fontSize: 16, 
+  textAlign: "center", 
+  marginBottom: 30 
+},
+startButton: { 
+  backgroundColor: "transparent", 
+  paddingVertical: 14, 
+  paddingHorizontal: 40, 
+  borderRadius: 35,
+  borderWidth: 3,
+  borderColor: '#ffffff',
+},
+startText: { 
+  color: "#fffefdff", 
+  fontWeight: "bold", 
+  fontSize: 18 
+},
+container: { 
+  flex: 1, 
+  backgroundColor: "#f6ddddff", 
+  padding: 15 
+},
+mainTitle: { 
+  fontSize: 28, 
+  fontWeight: "800", 
+  color: "#312424ed", 
+  textAlign: "center" 
+},
+subtitle: { 
+  textAlign: "center", 
+  color: "#140a0aed", 
+  marginBottom: 15, 
+  fontSize: 15 
+},
+  // Carousel Wrapper for better positioning
+  carouselWrapper: {
+    marginTop: 20, // Added margin to move carousel down
+    marginBottom: 15,
+  },
+  
+  // Carousel Styles
+  carouselContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    height: 120,
+  },
+  carouselTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#4b2e2b",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  carouselItem: {
+    width: screenWidth - 60,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 15,
+  },
+  carouselCategory: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#832e2eed",
+    marginBottom: 6,
+  },
+  carouselPrice: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#4b2e2b",
+    marginBottom: 2,
+  },
+  carouselLabel: {
+    fontSize: 12,
+    color: "#6c757d",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  paginationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
+  },
+  paginationDotActive: {
+    backgroundColor: "#832e2eed",
+  },
+  paginationDotInactive: {
+    backgroundColor: "#d7ccc8",
+  },
+  
+  searchContainer: {
+    marginBottom: 15,
+  },
+  searchInput: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    borderColor: "#8d6e63",
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    height: 50,
+    fontSize: 16,
+  },
+  
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 15,
   },
-  // Container for item counter display
   counterContainer: {
     backgroundColor: "#f0e6e6",
     paddingHorizontal: 12,
@@ -786,15 +1051,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d7ccc8",
   },
-  // Text style for item counter
   counterText: {
     fontSize: 14,
     fontWeight: "600",
     color: "#4b2e2b",
   },
-
-  // ==================== FILTER MODAL STYLES ====================
-  // Filter button style
   filterButton: {
     backgroundColor: "#9c5353ed",
     padding: 12,
@@ -802,20 +1063,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: 120,
   },
-  // Filter button text
   filterButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  // Modal background overlay
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0,0,0,0.5)",
   },
-  // Modal content container
   modalContent: {
     backgroundColor: "white",
     borderRadius: 20,
@@ -823,7 +1081,6 @@ const styles = StyleSheet.create({
     width: "85%",
     maxHeight: "80%",
   },
-  // Modal title text
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -831,7 +1088,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  // Filter option labels (Category, Max Price)
   filterLabel: {
     fontSize: 16,
     fontWeight: "600",
@@ -839,11 +1095,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 10,
   },
-  // Container for filter action buttons
   filterButtonsContainer: {
     marginTop: 20,
   },
-  // Apply filters button
   applyButton: {
     backgroundColor: "#832e2eed",
     padding: 15,
@@ -851,13 +1105,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  // Apply button text
   applyButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  // Reset filters button
   resetButton: {
     backgroundColor: "#b15b5bff",
     padding: 15,
@@ -865,28 +1117,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  // Reset button text
   resetButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-  // Cancel button in modal
   modalCancelButton: {
     backgroundColor: "#b98282ff",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
   },
-  // Modal cancel button text
   modalCancelButtonText: {
     color: "#ffffffff",
     fontWeight: "bold",
     fontSize: 16,
   },
-
-  // ==================== MENU ITEM CARD STYLES ====================
-  // Container for each menu item card
   card: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -897,17 +1143,11 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  // Menu item image
   cardImage: { width: "100%", height: 220 },
-  // Content area of menu card (text area)
   cardContent: { padding: 15 },
-  // Menu item name/title
   cardTitle: { fontSize: 20, fontWeight: "700", color: "#4b2e2b" },
-  // Menu item description text
   cardDesc: { color: "#4b2e2b", fontSize: 14, marginVertical: 5 },
-  // Meta info (category, price, intensity)
   cardMeta: { color: "#4b2e2b", fontSize: 13 },
-  // Remove item button (not currently used - replaced by smallButton)
   removeButton: {
     backgroundColor: "#be7777ff",
     padding: 10,
@@ -915,9 +1155,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  // Remove button text
   removeText: { color: "#fff", fontWeight: "bold" },
-  // Add item button (not currently used in current screens)
   addButton: {
     backgroundColor: "#9c5353ed",
     borderRadius: 30,
@@ -927,15 +1165,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 4,
   },
-  // Add button text
   addText: { color: "#fff8e1", fontSize: 18, fontWeight: "bold" },
-
-  // ==================== FORM STYLES (MANAGE MENU SCREEN) ====================
-  // Container for form inputs - CHANGED TO PINK BACKGROUND
-  formContainer: { backgroundColor: "#f6ddddff", padding:55},
-  // Form header/title
+  formContainer: { backgroundColor: "#f6ddddff", padding: 55 },
   formHeader: { fontSize: 28, color: "#482a2aff", fontWeight: "bold", textAlign: "center", marginBottom: 20 },
-  // Text input fields
   input: {
     backgroundColor: "#fff",
     borderRadius: 10,
@@ -946,13 +1178,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginVertical: 8,
   },
-
- // ==================== PICKER/DROPDOWN STYLES ====================
-  // Wrapper for picker component
   pickerWrapper: { marginVertical: 10 },
-  // Label for picker/dropdown
   label: { fontSize: 15, fontWeight: "600", color: "#4b2e2b", marginBottom: 6, marginLeft: 4 },
-  // Container for picker/dropdown
   pickerContainer: {
     borderWidth: 1,
     borderColor: "#8d6e63",
@@ -962,7 +1189,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
   },
-  // Picker/dropdown style
   pickerStyle: {
     height: 50,
     width: "100%",
@@ -971,9 +1197,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: Platform.OS === "ios" ? -6 : -2,
   },
-
-  // ==================== IMAGE PREVIEW STYLES ====================
-  // Preview image in manage menu form
   imagePreview: {
     width: "100%",
     height: 220,
@@ -983,17 +1206,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
-  // Save item button in form
   saveButton: { backgroundColor: "#b15b5bff", padding: 15, borderRadius: 10, marginTop: 15, alignItems: "center" },
-  // Save button text
   saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  // Cancel/back button in form
-  cancelButton: { backgroundColor: "#b98282ff",alignItems:"center", padding: 15, borderRadius: 10, marginTop: 15 },
-  // Cancel button text
+  cancelButton: { backgroundColor: "#b98282ff", alignItems: "center", padding: 15, borderRadius: 10, marginTop: 15 },
   cancelButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-
-  // ==================== COURSE SELECTION SCREEN STYLES ====================
-  // Course category buttons (Starter, Main, etc.)
   courseButton: {
     backgroundColor: "#ffffffff",
     padding: 18,
@@ -1002,27 +1218,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#aa5e5eff",
   },
-  // Course button text
   courseButtonText: { fontWeight: "700", fontSize: 16, color: "#432222ff" },
-
-  // ==================== NAVIGATION BUTTON STYLES ====================
-  // Primary navigation button (dark brown)
   rowButton: { backgroundColor: "#832e2eed", borderRadius: 30, paddingVertical: 14, alignItems: "center", elevation: 3 },
-  // Primary navigation button text
   rowButtonText: { color: "#e9ddddff", fontSize: 16, fontWeight: "700" },
-
-  // Secondary/back button (lighter brown)
   backButton: { backgroundColor: "#b15b5bff", borderRadius: 30, paddingVertical: 14, alignItems: "center", elevation: 3 },
-  // Back button text
   backButtonText: { color: "#ffffffff", fontSize: 16, fontWeight: "700" },
-
-  // ==================== SMALL ACTION BUTTON STYLES ====================
-  // Small buttons used for Details/Remove actions on menu cards
   smallButton: { backgroundColor: "#bf8a8aff", padding: 8, borderRadius: 8 },
-  // Small button text
   smallButtonText: { color: "#ffffffff", fontWeight: "700" },
 });
-
 //CODE ATTRIBUTION//
 
 //Title:TypeScript tutorial in Visual Studio Code//
