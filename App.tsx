@@ -624,7 +624,7 @@ function HomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "
         )}
       />
 
-      {/* ONLY View Courses button at the bottom of Home Screen */}
+      {/*View Courses button at the bottom of Home Screen */}
       <View style={{ marginTop: 10 }}>
         <TouchableOpacity
           style={styles.rowButton}
@@ -658,7 +658,7 @@ function CourseSelectionScreen({ navigation }: NativeStackScreenProps<RootStackP
         </TouchableOpacity>
       ))}
 
-      {/* Edit Menu button added to Course Selection Screen */}
+      {/* Edit Menu button on Course Selection Screen */}
       <TouchableOpacity
         style={[styles.rowButton, { marginTop: 20 }]}
         onPress={() => navigation.navigate("ManageScreen")}
@@ -959,9 +959,10 @@ subtitle: {
   marginBottom: 15, 
   fontSize: 15 
 },
+
   // Carousel Wrapper for better positioning
   carouselWrapper: {
-    marginTop: 20, // Added margin to move carousel down
+    marginTop: 20, 
     marginBottom: 15,
   },
   
